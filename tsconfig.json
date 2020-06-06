@@ -1,0 +1,23 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "es6",
+		"outDir": "out",
+		"lib": [
+			"ES6",
+			"DOM",
+			"DOM.Iterable"
+		],
+		"sourceMap": true,
+		"rootDir": "src",
+		"strict": true,
+		"jsx": "react",
+		"jsxFactory": "h"
+	},
+	"include": [
+		"src"
+	],
+	"exclude": [
+		"node_modules"
+	]
+}
