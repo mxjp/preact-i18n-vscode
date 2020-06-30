@@ -1,0 +1,53 @@
+{
+	"name": "preact-i18n-vscode",
+	"displayName": "preact-i18n-vscode",
+	"publisher": "mpt",
+	"private": true,
+	"description": "",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.46.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"*"
+	],
+	"main": "./out/index.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "preact-i18n.show-editor",
+				"title": "Show Preact Translation Editor"
+			}
+		]
+	},
+	"scripts": {
+		"clean": "rimraf out/**",
+		"compile:extension": "tsc -p tsconfig-extension.json",
+		"compile:editor": "webpack --config webpack.editor.js --env.prod",
+		"watch:extension": "tsc -p tsconfig-extension.json -w",
+		"watch:editor": "webpack --config webpack.editor.js --watch",
+		"compile": "npm run clean && concurrently npm:compile:extension npm:compile:editor",
+		"watch": "npm run clean && concurrently npm:watch:extension npm:watch:editor",
+		"vscode:prepublish": "npm run compile"
+	},
+	"devDependencies": {
+		"@mpt/preact-i18n": "^0.2.1",
+		"@types/node": "^12.11.7",
+		"@types/vscode": "^1.46.0",
+		"concurrently": "^5.2.0",
+		"preact": "^10.4.4",
+		"rimraf": "^3.0.2",
+		"ts-loader": "^7.0.5",
+		"typescript": "^3.6.4",
+		"vsce": "^1.77.0",
+		"webpack": "^4.43.0",
+		"webpack-cli": "^3.3.12"
+	},
+	"dependencies": {},
+	"repository": "github:mxjp/preact-i18n-vscode",
+	"author": "Max J. Polster",
+	"license": "MIT"
+}

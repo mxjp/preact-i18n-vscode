@@ -1,0 +1,24 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "es6",
+		"lib": [
+			"ES6",
+			"DOM",
+			"DOM.Iterable"
+		],
+		"sourceMap": true,
+		"rootDir": "src",
+		"outDir": "out",
+		"strict": true,
+		"jsx": "react",
+		"jsxFactory": "h",
+		"experimentalDecorators": true
+	},
+	"include": [
+		"src"
+	],
+	"exclude": [
+		"node_modules"
+	]
+}
