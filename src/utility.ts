@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 
 export function rateLimit<A extends any[], T>(
 	action: (this: T, ...args: A) => void,
-	delay = 300,
+	delay = 100,
 	onError?: (this: T, error: any) => void
 ): (this: T, ...args: A) => void {
 	let timer: any;

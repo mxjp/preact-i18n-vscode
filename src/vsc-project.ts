@@ -29,10 +29,12 @@ export class VscProject extends vscode.Disposable {
 	private readonly _onDidUpdateProjectData = new vscode.EventEmitter<void>();
 	private readonly _onDidUpdateSource = new vscode.EventEmitter<VscSourceFile>();
 	private readonly _onDidRemoveSource = new vscode.EventEmitter<string>();
+	private readonly _onDidVerify = new vscode.EventEmitter<void>();
 
 	public readonly onDidUpdateProjectData = this._onDidUpdateProjectData.event;
 	public readonly onDidUpdateSource = this._onDidUpdateSource.event;
 	public readonly onDidRemoveSource = this._onDidRemoveSource.event;
+	public readonly onDidVerify = this._onDidVerify.event;
 
 	private _disposed = false;
 	private _valid = false;
@@ -47,8 +49,8 @@ export class VscProject extends vscode.Disposable {
 		return this._project.sources as ReadonlyMap<string, VscSourceFile>;
 	}
 
-	public getTranslationSet(id: string) {
-		return this._editor.getTranslationSet(id);
+	public get editor() {
+		return this._editor;
 	}
 
 	private async _updateProjectData() {
@@ -87,7 +89,7 @@ export class VscProject extends vscode.Disposable {
 		const valid = this._project.verify();
 		if (valid !== this._valid) {
 			this._valid = valid;
-			// TODO: Notify valid changed.
+			this._onDidVerify.fire();
 		}
 	}
 
