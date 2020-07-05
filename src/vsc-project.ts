@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { Config, Project, SourceFile, TranslationEditor } from "@mpt/preact-i18n/dist/tooling";
+import { Config, Project, SourceFile } from "@mpt/preact-i18n/dist/tooling";
 import { VscSourceFile } from "./vsc-source-file";
 import { Output } from "./output";
 import { basename } from "path";
@@ -15,29 +15,29 @@ export class VscProject extends vscode.Disposable {
 			this._watchers.forEach(watcher => watcher.dispose());
 		});
 		this._project = new Project(config);
-		this._editor = new TranslationEditor(this._project);
-
 		this._start().catch(error => _output.error(error));
 
 		this.displayName = basename(config.context);
 	}
 
 	private readonly _project: Project;
-	private readonly _editor: TranslationEditor;
 	private readonly _watchers: vscode.FileSystemWatcher[] = [];
 
 	private readonly _onDidUpdateProjectData = new vscode.EventEmitter<void>();
 	private readonly _onDidUpdateSource = new vscode.EventEmitter<VscSourceFile>();
 	private readonly _onDidRemoveSource = new vscode.EventEmitter<string>();
 	private readonly _onDidVerify = new vscode.EventEmitter<void>();
+	private readonly _onDidEdit = new vscode.EventEmitter<void>();
 
 	public readonly onDidUpdateProjectData = this._onDidUpdateProjectData.event;
 	public readonly onDidUpdateSource = this._onDidUpdateSource.event;
 	public readonly onDidRemoveSource = this._onDidRemoveSource.event;
 	public readonly onDidVerify = this._onDidVerify.event;
+	public readonly onDidEdit = this._onDidEdit.event;
 
 	private _disposed = false;
 	private _valid = false;
+	private _dirty = false;
 
 	public readonly displayName: string;
 
@@ -49,12 +49,39 @@ export class VscProject extends vscode.Disposable {
 		return this._project.sources as ReadonlyMap<string, VscSourceFile>;
 	}
 
-	public get editor() {
-		return this._editor;
+	public setTranslation(id: string, language: string, value: string) {
+		const translationSet = this._project.data.values[id];
+		if (translationSet) {
+			this._dirty = true;
+			translationSet.translations[language] = {
+				lastModified: Project.Data.now(),
+				value
+			};
+			this._onDidEdit.fire();
+		}
+	}
+
+	public getTranslationSet(id: string) {
+		return this._project.data.values[id];
+	}
+
+	public async saveChanges() {
+		if (this._dirty) {
+			this._output.message(`Applied changes to: ${this.config.projectData}`);
+			await vscode.workspace.fs.writeFile(
+				vscode.Uri.file(this._project.config.projectData),
+				new TextEncoder().encode(Project.Data.stringify(this._project.data))
+			);
+			this._dirty = false;
+		}
 	}
 
 	private async _updateProjectData() {
 		try {
+			if (this._dirty) {
+				this._output.warn(`Project data has changed while you were editing: ${this.config.projectData}`);
+				// TODO: Write a backup of current project data to disk before loading new data.
+			}
 			const content = await vscode.workspace.fs.readFile(vscode.Uri.file(this.config.projectData));
 			this._project.data = Project.Data.parse(new TextDecoder().decode(content));
 			this._output.message(`Updated data: ${this.config.projectData}`);

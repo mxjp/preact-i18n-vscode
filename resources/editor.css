@@ -1,0 +1,84 @@
+
+* {
+	box-sizing: border-box;
+}
+
+.error, .info {
+	margin: .5rem 0;
+}
+
+.error {
+	color: var(--vscode-errorForeground);
+}
+
+.editor {
+	display: grid;
+	grid-template-columns: minmax(3rem, auto) auto 1fr auto;
+	gap: 0.3rem;
+	align-items: center;
+	margin: .5rem 0;
+
+	font-family: var(--vscode-font-family);
+	font-size: var(--vscode-font-size);
+	font-weight: var(--vscode-font-weight);
+}
+
+.editor-disabled {
+	opacity: .5;
+}
+
+.editor input {
+	background-color: inherit;
+	background: var(--vscode-input-background);
+	color: var(--vscode-input-foreground);
+	border: none;
+	font-family: inherit;
+	font-size: inherit;
+	font-weight: inherit;
+	width: 100%;
+
+	padding: 0.2rem;
+}
+
+.editor-last-modified,
+.editor-translation-lang,
+.editor-translation-last-modified {
+	padding: 0.2rem 0.4rem;
+	background: var(--vscode-badge-background);
+}
+
+.editor-translation-invalid {
+	background: var(--vscode-inputValidation-errorBackground);
+}
+
+* + .editor-gap {
+	grid-column: 1 / 5;
+	height: .5rem;
+}
+
+.editor-id {
+	grid-column: 1 / 2;
+	justify-self: end;
+	opacity: .5;
+}
+
+.editor-value {
+	grid-column: 2 / 4;
+}
+
+.editor-last-modified {
+	grid-column: 4 / 5;
+}
+
+.editor-translation-lang {
+	grid-column: 2 / 3;
+	justify-self: end;
+}
+
+.editor-translation-value {
+	grid-column: 3 / 4;
+}
+
+.editor-translation-last-modified {
+	grid-column: 4 / 5;
+}

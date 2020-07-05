@@ -17,7 +17,16 @@ export class Output extends vscode.Disposable {
 
 	public error(error: any) {
 		this._channel.appendLine(`${prefix()} ${inspect(error, false, undefined, true)}`);
-		vscode.window.showWarningMessage(`Preact I18n Error: ${error?.message || error}`, "Show Output").then(res => {
+		vscode.window.showErrorMessage(`Preact I18n Error: ${error?.message || error}`, "Show Output").then(res => {
+			if (res) {
+				this._channel.show();
+			}
+		});
+	}
+
+	public warn(message: string) {
+		this._channel.appendLine(`${prefix()} ${message}`);
+		vscode.window.showWarningMessage(`Preact I18n Warning: ${message}`, "Show Output").then(res => {
 			if (res) {
 				this._channel.show();
 			}

@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-export function rateLimit<A extends any[], T>(
+export function wrapRateLimit<A extends any[], T>(
 	action: (this: T, ...args: A) => void,
 	delay = 100,
 	onError?: (this: T, error: any) => void
@@ -15,7 +15,7 @@ export function rateLimit<A extends any[], T>(
 		if (now > nextImmediate) {
 			nextImmediate = now + delay;
 			try {
-				action.call(this, ...args);
+				action.apply(this, args);
 			} catch (error) {
 				if (onError) {
 					onError.call(this, error);
@@ -28,7 +28,7 @@ export function rateLimit<A extends any[], T>(
 				timer = null;
 				nextImmediate = now + delay;
 				try {
-					action.call(this, ...args);
+					action.apply(this, args);
 				} catch (error) {
 					if (onError) {
 						onError.call(this, error);
@@ -41,23 +41,40 @@ export function rateLimit<A extends any[], T>(
 	};
 }
 
-export function useRateLimit(delay?: number) {
+export function rateLimit(delay?: number) {
 	return function (target: any, key: string | symbol, descriptor: PropertyDescriptor) {
-		descriptor.value = rateLimit(descriptor.value, delay, function(this: any, error: any) {
-			if (useRateLimit.handleDeferredError in this) {
-				this[useRateLimit.handleDeferredError](error);
-			} else {
-				throw error;
-			}
-		});
+		descriptor.value = wrapRateLimit(descriptor.value, delay, handleDeferredError);
 	}
 }
 
-export namespace useRateLimit {
-	export const handleDeferredError = Symbol("onRateLimitError");
+function handleDeferredError(this: any, error: any) {
+	if (onDeferredError in this) {
+		this[onDeferredError](error);
+	} else {
+		throw error;
+	}
 }
+
+export const onDeferredError = Symbol("onDeferredError");
 
 export function disposeAll(target: vscode.Disposable[]) {
 	target.forEach(d => d.dispose());
 	target.length = 0;
+}
+
+export class PromiseBag {
+	private _pending = new Set<Promise<any>>();
+
+	public put(promise: Promise<any>) {
+		this._pending.add(promise = promise.catch(() => {}));
+		promise.then(() => {
+			this._pending.delete(promise);
+		});
+	}
+
+	public async wait() {
+		while (this._pending.size > 0) {
+			await Promise.all(this._pending);
+		}
+	}
 }

@@ -1,18 +1,18 @@
-import { Editor } from ".";
 import { Config } from "@mpt/preact-i18n/dist/tooling";
+import { Editor } from ".";
 
-export type ViewMessage = {
-	readonly type: ViewMessage.Type.UpdateProject;
-	readonly projectConfig?: Config;
+export type ControllerMessage = {
+	readonly type: ControllerMessage.Type.UpdateProject;
+	readonly config?: Config;
 } | {
-	readonly type: ViewMessage.Type.UpdateTranslationSets;
-	readonly translationSets: Editor.TranslationSet[];
+	readonly type: ControllerMessage.Type.UpdateProjectValid;
+	readonly valid: boolean;
 } | {
-	readonly type: ViewMessage.Type.UpdateProjectValid;
-	readonly projectValid: boolean;
+	readonly type: ControllerMessage.Type.UpdateTranslationSets;
+	readonly sets: Editor.TranslationSet[];
 };
 
-export namespace ViewMessage {
+export namespace ControllerMessage {
 	export enum Type {
 		UpdateProject,
 		UpdateProjectValid,
@@ -20,18 +20,19 @@ export namespace ViewMessage {
 	}
 }
 
-export type RendererMessage = {
-	readonly type: RendererMessage.Type.Ready;
+export type ViewMessage = {
+	readonly type: ViewMessage.Type.Load;
 } | {
-	readonly type: RendererMessage.Type.SetTranslationValue;
+	readonly type: ViewMessage.Type.SetTranslation;
+	readonly projectConfigFilename: string;
 	readonly id: string;
 	readonly language: string;
 	readonly value: string;
 };
 
-export namespace RendererMessage {
+export namespace ViewMessage {
 	export enum Type {
-		Ready,
-		SetTranslationValue
+		Load,
+		SetTranslation
 	}
 }

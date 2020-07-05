@@ -6,7 +6,7 @@ import { Editor } from './editor';
 export function activate(context: vscode.ExtensionContext) {
 	const output = new Output();
 	const projects = new VscProjectManager(output);
-	const editor = new Editor(context, output, projects);
+	const editor = new Editor(output, context, projects);
 	context.subscriptions.push(output, projects, editor);
 }
 

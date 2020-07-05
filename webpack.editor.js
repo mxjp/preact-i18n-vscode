@@ -6,7 +6,7 @@ const webpack = require("webpack");
 module.exports = ({ prod } = {}) => ({
 	context: __dirname,
 	mode: prod ? "production" : "development",
-	entry: "./src/editor/renderer",
+	entry: "./src/editor/view",
 	devtool: prod ? false : "inline-source-map",
 	resolve: {
 		extensions: [".mjs", ".js", ".json", ".ts", ".tsx"]
@@ -22,7 +22,7 @@ module.exports = ({ prod } = {}) => ({
 		})
 	],
 	output: {
-		path: path.join(__dirname, "out/editor/renderer"),
+		path: path.join(__dirname, "out/editor/view"),
 		filename: "index.js"
 	}
 });

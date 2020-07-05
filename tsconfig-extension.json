@@ -4,6 +4,6 @@
 		"src"
 	],
 	"exclude": [
-		"src/editor/renderer"
+		"src/editor/view"
 	]
 }
