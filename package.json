@@ -35,7 +35,6 @@
 		"make": "vsce package"
 	},
 	"devDependencies": {
-		"@mpt/preact-i18n": "^0.3.1",
 		"@types/node": "^12.11.7",
 		"@types/vscode": "^1.46.0",
 		"concurrently": "^5.2.0",
@@ -47,7 +46,9 @@
 		"webpack": "^4.43.0",
 		"webpack-cli": "^3.3.12"
 	},
-	"dependencies": {},
+	"dependencies": {
+		"@mpt/preact-i18n": "^0.3.1"
+	},
 	"repository": "github:mxjp/preact-i18n-vscode",
 	"author": "Max J. Polster",
 	"license": "MIT"
