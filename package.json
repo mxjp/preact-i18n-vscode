@@ -31,7 +31,8 @@
 		"watch:editor": "webpack --config webpack.editor.js --watch",
 		"compile": "npm run clean && concurrently npm:compile:extension npm:compile:editor",
 		"watch": "npm run clean && concurrently npm:watch:extension npm:watch:editor",
-		"vscode:prepublish": "npm run compile"
+		"vscode:prepublish": "npm run compile",
+		"make": "vsce package"
 	},
 	"devDependencies": {
 		"@mpt/preact-i18n": "^0.3.1",
