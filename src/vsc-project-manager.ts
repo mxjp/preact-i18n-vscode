@@ -68,7 +68,7 @@ export class VscProjectManager extends vscode.Disposable {
 			const content = await vscode.workspace.fs.readFile(uri);
 			const config = Config.parse(new TextDecoder().decode(content), context);
 
-			const project = new VscProject(this._output, configFilename, config);
+			const project = new VscProject(this._output, uri, config);
 			project.onDidUpdateSource(source => {
 				this._allSources.set(source.filename, source);
 			});

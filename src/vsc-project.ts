@@ -7,7 +7,7 @@ import { basename } from "path";
 export class VscProject extends vscode.Disposable {
 	public constructor(
 		private readonly _output: Output,
-		public readonly configFilename: string,
+		public readonly configUri: vscode.Uri,
 		public readonly config: Config
 	) {
 		super(() => {
@@ -17,6 +17,7 @@ export class VscProject extends vscode.Disposable {
 		this._project = new Project(config);
 		this._start().catch(error => _output.error(error));
 
+		this.configFilename = configUri.fsPath;
 		this.displayName = basename(config.context);
 	}
 
@@ -39,6 +40,7 @@ export class VscProject extends vscode.Disposable {
 	private _valid = false;
 	private _dirty = false;
 
+	public readonly configFilename: string;
 	public readonly displayName: string;
 
 	public get valid() {
@@ -47,6 +49,14 @@ export class VscProject extends vscode.Disposable {
 
 	public get sources() {
 		return this._project.sources as ReadonlyMap<string, VscSourceFile>;
+	}
+
+	public getDiagnostics() {
+		return this._project.getDiagnostics();
+	}
+
+	public getSourceForId(id: string) {
+		return this._project.getSourceForId(id) as VscSourceFile | undefined;
 	}
 
 	public setTranslation(id: string, language: string, value: string) {
@@ -97,7 +107,7 @@ export class VscProject extends vscode.Disposable {
 		try {
 			const content = await vscode.workspace.fs.readFile(uri);
 			const sourceText = new TextDecoder().decode(content);
-			const source = new VscSourceFile(this, uri.fsPath, sourceText);
+			const source = new VscSourceFile(this, uri, sourceText);
 			this._project.updateSource(source);
 			this._output.message(`Updated source: ${uri.fsPath}`);
 			this._onDidUpdateSource.fire(source);

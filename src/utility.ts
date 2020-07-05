@@ -57,9 +57,13 @@ function handleDeferredError(this: any, error: any) {
 
 export const onDeferredError = Symbol("onDeferredError");
 
-export function disposeAll(target: vscode.Disposable[]) {
-	target.forEach(d => d.dispose());
-	target.length = 0;
+export function disposeAll(disposables: Iterable<vscode.Disposable>) {
+	for (const disposable of disposables) {
+		disposable.dispose();
+	}
+	if (Array.isArray(disposables)) {
+		disposables.length = 0;
+	}
 }
 
 export class PromiseBag {
