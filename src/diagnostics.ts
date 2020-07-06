@@ -1,16 +1,16 @@
 import * as vscode from "vscode";
-import { disposeAll } from "./utility";
+import { disposeAll, wrapRateLimit } from "./utility";
 import { VscProject } from "./vsc-project";
 import { VscProjectManager } from "./vsc-project-manager";
 import { Diagnostic } from "@mpt/preact-i18n/dist/tooling";
 import { VscSourceFile } from "./vsc-source-file";
+import { Output } from "./output";
 
-export function provideDiagnostics(projects: VscProjectManager) {
-	const collection = vscode.languages.createDiagnosticCollection("Preact I18n");
+export function provideDiagnostics(output: Output, projects: VscProjectManager) {
 	const projectDiagnostics = new Map<VscProject, vscode.Disposable>();
 
 	projects.onDidLoadProject(project => {
-		projectDiagnostics.set(project, provideProjectDiagnostics(collection, project));
+		projectDiagnostics.set(project, provideProjectDiagnostics(output, project));
 	});
 
 	projects.onDidUnloadProject(project => {
@@ -19,7 +19,6 @@ export function provideDiagnostics(projects: VscProjectManager) {
 
 	return new vscode.Disposable(() => {
 		disposeAll(projectDiagnostics.values());
-		collection.dispose();
 	});
 }
 
@@ -33,10 +32,13 @@ function getMessage(diagnostic: Diagnostic) {
 	}
 }
 
-function provideProjectDiagnostics(collection: vscode.DiagnosticCollection, project: VscProject) {
-	const usedSources: VscSourceFile[] = [];
+function provideProjectDiagnostics(output: Output, project: VscProject) {
+	const collection = vscode.languages.createDiagnosticCollection("Preact I18n");
 
-	function update() {
+	const update = wrapRateLimit(() => {
+		output.message(`Updating diagnostics for: ${project.configFilename}`);
+		collection.clear();
+
 		if (project.valid) {
 			const diagnostics = project.getDiagnostics();
 			const sources = new Map<VscSourceFile, vscode.Diagnostic[]>();
@@ -71,22 +73,10 @@ function provideProjectDiagnostics(collection: vscode.DiagnosticCollection, proj
 					}
 				}
 			}
-
-			for (const usedSource of usedSources) {
-				if (!sources.has(usedSource)) {
-					collection.delete(usedSource.uri);
-				}
-			}
-			usedSources.length = 0;
-
 			for (const [source, diagnostics] of sources) {
 				collection.set(source.uri, diagnostics);
-				usedSources.push(source);
 			}
-			collection.delete(project.configUri);
 		} else {
-			usedSources.forEach(source => collection.delete(source.uri));
-			usedSources.length = 0;
 			collection.set(project.configUri, [
 				new vscode.Diagnostic(
 					new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0)),
@@ -95,16 +85,14 @@ function provideProjectDiagnostics(collection: vscode.DiagnosticCollection, proj
 				)
 			])
 		}
-	}
+	});
 
 	const subscriptions = [
-		project.onDidVerify(update)
+		project.onDidUpdate(update),
+		collection
 	];
 
 	return new vscode.Disposable(() => {
 		disposeAll(subscriptions);
-		for (const source of project.sources.values()) {
-			collection.delete(source.uri);
-		}
 	});
 }

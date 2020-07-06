@@ -28,12 +28,14 @@ export class VscProject extends vscode.Disposable {
 	private readonly _onDidUpdateSource = new vscode.EventEmitter<VscSourceFile>();
 	private readonly _onDidRemoveSource = new vscode.EventEmitter<string>();
 	private readonly _onDidVerify = new vscode.EventEmitter<void>();
+	private readonly _onDidUpdate = new vscode.EventEmitter<void>();
 	private readonly _onDidEdit = new vscode.EventEmitter<void>();
 
 	public readonly onDidUpdateProjectData = this._onDidUpdateProjectData.event;
 	public readonly onDidUpdateSource = this._onDidUpdateSource.event;
 	public readonly onDidRemoveSource = this._onDidRemoveSource.event;
 	public readonly onDidVerify = this._onDidVerify.event;
+	public readonly onDidUpdate = this._onDidUpdate.event;
 	public readonly onDidEdit = this._onDidEdit.event;
 
 	private _disposed = false;
@@ -122,12 +124,13 @@ export class VscProject extends vscode.Disposable {
 		this._onDidRemoveSource.fire(uri.fsPath);
 	}
 
-	private _verify() {
+	private _updated() {
 		const valid = this._project.verify();
 		if (valid !== this._valid) {
 			this._valid = valid;
 			this._onDidVerify.fire();
 		}
+		this._onDidUpdate.fire();
 	}
 
 	private async _start() {
@@ -140,7 +143,7 @@ export class VscProject extends vscode.Disposable {
 				}
 			}
 		}
-		this._verify();
+		this._updated();
 		if (!this._disposed) {
 			const projectDataWatcher = vscode.workspace.createFileSystemWatcher({
 				base: this.config.context,
@@ -149,7 +152,7 @@ export class VscProject extends vscode.Disposable {
 			projectDataWatcher.onDidChange(async uri => {
 				if (uri.fsPath === this._project.config.projectData) {
 					await this._updateProjectData();
-					this._verify();
+					this._updated();
 				}
 			});
 			this._watchers.push(projectDataWatcher);
@@ -162,19 +165,19 @@ export class VscProject extends vscode.Disposable {
 				sourceWatcher.onDidCreate(async uri => {
 					if (SourceFile.isSourceFile(uri.fsPath)) {
 						await this._updateSource(uri);
-						this._verify();
+						this._updated();
 					}
 				});
 				sourceWatcher.onDidChange(async uri => {
 					if (SourceFile.isSourceFile(uri.fsPath)) {
 						await this._updateSource(uri);
-						this._verify();
+						this._updated();
 					}
 				});
 				sourceWatcher.onDidDelete(uri => {
 					if (SourceFile.isSourceFile(uri.fsPath)) {
 						this._removeSource(uri);
-						this._verify();
+						this._updated();
 					}
 				});
 				this._watchers.push(sourceWatcher);

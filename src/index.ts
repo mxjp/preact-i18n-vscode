@@ -8,10 +8,11 @@ export function activate(context: vscode.ExtensionContext) {
 	const output = new Output();
 	const projects = new VscProjectManager(output);
 	const editor = new Editor(output, context, projects);
+	const diagnostics = provideDiagnostics(output, projects);
 
 	// TODO: Configuration option for disabling diagnostics.
 
-	context.subscriptions.push(output, projects, editor, provideDiagnostics(projects));
+	context.subscriptions.push(output, projects, editor, diagnostics);
 }
 
 export function deactivate() {}
