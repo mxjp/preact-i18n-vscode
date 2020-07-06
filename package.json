@@ -32,7 +32,8 @@
 		"compile": "npm run clean && concurrently npm:compile:extension npm:compile:editor",
 		"watch": "npm run clean && concurrently npm:watch:extension npm:watch:editor",
 		"vscode:prepublish": "npm run compile",
-		"make": "vsce package"
+		"make": "vsce package",
+		"publish": "vsce publish"
 	},
 	"devDependencies": {
 		"@types/node": "^12.11.7",
