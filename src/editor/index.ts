@@ -4,7 +4,7 @@ import { Output } from "../output";
 import { ViewController } from "./view-controller";
 import { rateLimit, disposeAll, PromiseBag, onDeferredError } from "../utility";
 import { VscSourceFile } from "../vsc-source-file";
-import { Project } from "@mpt/preact-i18n/dist/tooling";
+import { Project } from "@mpt/preact-i18n/tooling";
 import { VscProject } from "../vsc-project";
 
 export class Editor extends vscode.Disposable {
@@ -83,7 +83,7 @@ export class Editor extends vscode.Disposable {
 		return this._translationSets;
 	}
 
-	public setTranslation(projectConfigFilename: string, id: string, language: string, value: string) {
+	public setTranslation(projectConfigFilename: string, id: string, language: string, value: Project.Value) {
 		const project = this._projects.projects.get(projectConfigFilename);
 		if (project) {
 			project.setTranslation(id, language, value);

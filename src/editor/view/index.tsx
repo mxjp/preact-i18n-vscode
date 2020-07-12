@@ -1,5 +1,5 @@
 import { h, Component, render } from "preact";
-import { Config, Project } from "@mpt/preact-i18n/dist/tooling";
+import { Config, Project } from "@mpt/preact-i18n/tooling";
 import { Editor } from "..";
 import { ViewMessage, ControllerMessage } from "../messages";
 import { api } from "./api";

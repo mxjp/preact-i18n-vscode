@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { SourceFile } from "@mpt/preact-i18n/dist/tooling";
+import { SourceFile } from "@mpt/preact-i18n/tooling";
 import { VscProject } from "./vsc-project";
 import { relative } from "path";
 

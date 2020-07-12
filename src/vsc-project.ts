@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { Config, Project, SourceFile } from "@mpt/preact-i18n/dist/tooling";
+import { Config, Project, SourceFile } from "@mpt/preact-i18n/tooling";
 import { VscSourceFile } from "./vsc-source-file";
 import { Output } from "./output";
 import { basename } from "path";
@@ -61,7 +61,7 @@ export class VscProject extends vscode.Disposable {
 		return this._project.getSourceForId(id) as VscSourceFile | undefined;
 	}
 
-	public setTranslation(id: string, language: string, value: string) {
+	public setTranslation(id: string, language: string, value: Project.Value) {
 		const translationSet = this._project.data.values[id];
 		if (translationSet) {
 			this._dirty = true;

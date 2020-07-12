@@ -1,4 +1,4 @@
-import { Config } from "@mpt/preact-i18n/dist/tooling";
+import { Config, Project } from "@mpt/preact-i18n/tooling";
 import { Editor } from ".";
 
 export type ControllerMessage = {
@@ -27,7 +27,7 @@ export type ViewMessage = {
 	readonly projectConfigFilename: string;
 	readonly id: string;
 	readonly language: string;
-	readonly value: string;
+	readonly value: Project.Value;
 };
 
 export namespace ViewMessage {

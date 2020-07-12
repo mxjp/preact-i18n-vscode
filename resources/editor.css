@@ -23,6 +23,10 @@
 	font-weight: var(--vscode-font-weight);
 }
 
+.editor > * {
+	align-self: stretch;
+}
+
 .editor-disabled {
 	opacity: .5;
 }
@@ -77,6 +81,13 @@
 
 .editor-translation-value {
 	grid-column: 3 / 4;
+}
+
+.editor-translation-plural-value {
+	grid-column: 3 / 4;
+	display: grid;
+	row-gap: .15rem;
+	grid-template-columns: auto;
 }
 
 .editor-translation-last-modified {

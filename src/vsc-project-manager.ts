@@ -1,10 +1,9 @@
 import * as vscode from "vscode";
 import { dirname } from "path";
-import { Config } from "@mpt/preact-i18n/dist/tooling";
+import { Config } from "@mpt/preact-i18n/tooling";
 import { VscProject } from "./vsc-project";
 import { Output } from "./output";
 import { VscSourceFile } from "./vsc-source-file";
-import { forEachChild } from "typescript";
 
 const CONFIG_PATTERN = "**/i18n.json5";
 
