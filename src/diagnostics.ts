@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { disposeAll, wrapRateLimit } from "./utility";
 import { VscProject } from "./vsc-project";
 import { VscProjectManager } from "./vsc-project-manager";
-import { Diagnostic } from "@mpt/preact-i18n/tooling";
+import { Diagnostic, getDiagnosticMessage } from "@mpt/preact-i18n/tooling";
 import { VscSourceFile } from "./vsc-source-file";
 import { Output } from "./output";
 
@@ -22,28 +22,6 @@ export function provideDiagnostics(output: Output, projects: VscProjectManager) 
 	});
 }
 
-function getMessage(diagnostic: Diagnostic) {
-	switch (diagnostic.type) {
-		case Diagnostic.Type.MissingTranslation:
-			return `Translation for fragment #${diagnostic.id} for language "${diagnostic.language}" is missing.`;
-
-		case Diagnostic.Type.OutdatedTranslation:
-			return `Translation for fragment #${diagnostic.id} for language "${diagnostic.language}" is outdated.`;
-
-		case Diagnostic.Type.UnconfiguredTranslatedLanguage:
-			return `Fragment #${diagnostic.id} is translated to the language "${diagnostic.language}" that is not configured for this project.`;
-
-		case Diagnostic.Type.UnknownLanguagePlural:
-			return `Pluralization for language "${diagnostic.language}" is not supported.`;
-
-		case Diagnostic.Type.TranslationTypeMissmatch:
-			return `Translation value type for fragment #${diagnostic.id} for language "${diagnostic.language}" is incorrect.`;
-
-		case Diagnostic.Type.PluralFormCountMissmatch:
-			return `Value for fragment #${diagnostic.id} for language "${diagnostic.language}" has a wrong number of plural forms.`;
-	}
-}
-
 function provideProjectDiagnostics(output: Output, project: VscProject) {
 	const collection = vscode.languages.createDiagnosticCollection("Preact I18n");
 
@@ -54,11 +32,15 @@ function provideProjectDiagnostics(output: Output, project: VscProject) {
 		if (project.valid) {
 			const diagnostics = project.getDiagnostics();
 			const sources = new Map<VscSourceFile, vscode.Diagnostic[]>();
+			const projectDiagnostics: vscode.Diagnostic[] = [];
 
 			for (const diagnostic of diagnostics) {
 				switch (diagnostic.type) {
 					case Diagnostic.Type.MissingTranslation:
-					case Diagnostic.Type.OutdatedTranslation: {
+					case Diagnostic.Type.OutdatedTranslation:
+					case Diagnostic.Type.UnconfiguredTranslatedLanguage:
+					case Diagnostic.Type.TranslationTypeMissmatch:
+					case Diagnostic.Type.PluralFormCountMissmatch: {
 						const source = project.getSourceForId(diagnostic.id);
 						if (source) {
 							const fragment = source.fragmentsById.get(diagnostic.id);
@@ -70,7 +52,7 @@ function provideProjectDiagnostics(output: Output, project: VscProject) {
 										new vscode.Position(start.line, start.character),
 										new vscode.Position(end.line, end.character)
 									),
-									getMessage(diagnostic),
+									getDiagnosticMessage(diagnostic),
 									vscode.DiagnosticSeverity.Information
 								);
 								const vscDiagnostics = sources.get(source);
@@ -83,11 +65,22 @@ function provideProjectDiagnostics(output: Output, project: VscProject) {
 						}
 						break;
 					}
+
+					case Diagnostic.Type.UnknownLanguagePlural:
+						projectDiagnostics.push(
+							new vscode.Diagnostic(
+								new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0)),
+								getDiagnosticMessage(diagnostic),
+								vscode.DiagnosticSeverity.Information
+							)
+						);
+						break;
 				}
 			}
 			for (const [source, diagnostics] of sources) {
 				collection.set(source.uri, diagnostics);
 			}
+			collection.set(project.configUri, projectDiagnostics);
 		} else {
 			collection.set(project.configUri, [
 				new vscode.Diagnostic(

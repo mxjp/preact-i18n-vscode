@@ -48,7 +48,7 @@
 		"webpack-cli": "^3.3.12"
 	},
 	"dependencies": {
-		"@mpt/preact-i18n": "^0.4.1"
+		"@mpt/preact-i18n": "^0.4.4"
 	},
 	"repository": "github:mxjp/preact-i18n-vscode",
 	"author": "Max J. Polster",
