@@ -34,12 +34,14 @@ class View extends Component<{}, View.State> {
 			</div>;
 		}
 
-		const languages = state.projectConfig?.languages || [];
+		const sourceLanguage = state.projectConfig.sourceLanguage;
+		const languages = state.projectConfig.languages || [];
 
 		return <div class="editor">
 			{state.translationSets.map(item => <TranslationSetEditor
 				key={item.id}
 				languages={languages}
+				sourceLanguage={sourceLanguage}
 				item={item}
 				onValueInput={(language, value) => {
 					item.data.translations[language] = {
