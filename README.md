@@ -4,3 +4,5 @@ Vscode extension for editing translation project data created by [this package](
 ## Status
 This is an early in development version.<br>
 Use at your own risk.
+
+Currently all preact-i18n versions matching `^0.6.0` are supported.
