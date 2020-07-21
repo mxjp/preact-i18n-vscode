@@ -1,9 +1,9 @@
 import { h, Component, render } from "preact";
-import { Config, Project } from "@mpt/preact-i18n/tooling";
-import { Editor } from "..";
+import type { Config } from "@mpt/preact-i18n/tooling";
 import { ViewMessage, ControllerMessage } from "../messages";
 import { api } from "./api";
 import { TranslationSetEditor } from "./translation-set-editor";
+import { ValueType, TranslationSet } from "../internals";
 
 class View extends Component<{}, View.State> {
 	public constructor() {
@@ -44,10 +44,26 @@ class View extends Component<{}, View.State> {
 				sourceLanguage={sourceLanguage}
 				item={item}
 				onValueInput={(language, value) => {
-					item.data.translations[language] = {
-						value,
-						lastModified: Project.Data.now()
-					};
+					switch (item.valueType) {
+						case ValueType.Simple: {
+							item.translations[language] = {
+								value,
+								valueType: ValueType.Simple as any,
+								lastModified: new Date().toISOString()
+							};
+							break;
+						}
+
+						case ValueType.Plural: {
+							item.translations[language] = {
+								value,
+								valueType: ValueType.Simple as any,
+								lastModified: new Date().toISOString(),
+								rule: item.rule
+							};
+							break;
+						}
+					}
 					api.postMessage({
 						type: ViewMessage.Type.SetTranslation,
 						projectConfigFilename: item.project,
@@ -92,7 +108,7 @@ namespace View {
 	export interface State {
 		readonly projectConfig: Config | undefined;
 		readonly projectValid: boolean;
-		readonly translationSets: Editor.TranslationSet[];
+		readonly translationSets: TranslationSet[];
 	}
 }
 

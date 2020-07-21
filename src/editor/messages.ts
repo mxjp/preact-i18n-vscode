@@ -1,5 +1,5 @@
-import { Config, Project } from "@mpt/preact-i18n/tooling";
-import { Editor } from ".";
+import type { Config, Project } from "@mpt/preact-i18n/tooling";
+import { TranslationSet } from "./internals";
 
 export type ControllerMessage = {
 	readonly type: ControllerMessage.Type.UpdateProject;
@@ -9,7 +9,7 @@ export type ControllerMessage = {
 	readonly valid: boolean;
 } | {
 	readonly type: ControllerMessage.Type.UpdateTranslationSets;
-	readonly sets: Editor.TranslationSet[];
+	readonly sets: TranslationSet[];
 };
 
 export namespace ControllerMessage {

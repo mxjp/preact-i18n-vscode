@@ -2,7 +2,6 @@ import * as vscode from "vscode";
 import { disposeAll, wrapRateLimit } from "./utility";
 import { VscProject } from "./vsc-project";
 import { VscProjectManager } from "./vsc-project-manager";
-import { Diagnostic, getDiagnosticMessage } from "@mpt/preact-i18n/tooling";
 import { VscSourceFile } from "./vsc-source-file";
 import { Output } from "./output";
 
@@ -36,23 +35,23 @@ function provideProjectDiagnostics(output: Output, project: VscProject) {
 
 			for (const diagnostic of diagnostics) {
 				switch (diagnostic.type) {
-					case Diagnostic.Type.MissingTranslation:
-					case Diagnostic.Type.OutdatedTranslation:
-					case Diagnostic.Type.UnconfiguredTranslatedLanguage:
-					case Diagnostic.Type.TranslationTypeMissmatch:
-					case Diagnostic.Type.PluralFormCountMissmatch: {
+					case project.api.Diagnostic.Type.MissingTranslation:
+					case project.api.Diagnostic.Type.OutdatedTranslation:
+					case project.api.Diagnostic.Type.UnconfiguredTranslatedLanguage:
+					case project.api.Diagnostic.Type.TranslationTypeMissmatch:
+					case project.api.Diagnostic.Type.PluralFormCountMissmatch: {
 						const source = project.getSourceForId(diagnostic.id);
 						if (source) {
-							const fragment = source.fragmentsById.get(diagnostic.id);
+							const fragment = source.sourceFile.fragmentsById.get(diagnostic.id);
 							if (fragment) {
-								const start = source.offsetToPosition(fragment.start)!;
-								const end = source.offsetToPosition(fragment.end)!;
+								const start = source.sourceFile.offsetToPosition(fragment.start)!;
+								const end = source.sourceFile.offsetToPosition(fragment.end)!;
 								const vscDiagnostic = new vscode.Diagnostic(
 									new vscode.Range(
 										new vscode.Position(start.line, start.character),
 										new vscode.Position(end.line, end.character)
 									),
-									getDiagnosticMessage(diagnostic),
+									project.api.getDiagnosticMessage(diagnostic),
 									vscode.DiagnosticSeverity.Information
 								);
 								const vscDiagnostics = sources.get(source);
@@ -66,11 +65,11 @@ function provideProjectDiagnostics(output: Output, project: VscProject) {
 						break;
 					}
 
-					case Diagnostic.Type.UnknownLanguagePlural:
+					case project.api.Diagnostic.Type.UnknownLanguagePlural:
 						projectDiagnostics.push(
 							new vscode.Diagnostic(
 								new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0)),
-								getDiagnosticMessage(diagnostic),
+								project.api.getDiagnosticMessage(diagnostic),
 								vscode.DiagnosticSeverity.Information
 							)
 						);

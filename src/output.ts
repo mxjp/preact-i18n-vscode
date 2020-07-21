@@ -24,8 +24,8 @@ export class Output extends vscode.Disposable {
 		});
 	}
 
-	public warn(message: string) {
-		this._channel.appendLine(`${prefix()} ${message}`);
+	public warn(message: string, details?: any) {
+		this._channel.appendLine(`${prefix()} ${message}${details ? ` - ${details}` : ""}`);
 		vscode.window.showWarningMessage(`Preact I18n Warning: ${message}`, "Show Output").then(res => {
 			if (res) {
 				this._channel.show();

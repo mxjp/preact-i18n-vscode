@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
 import { dirname } from "path";
-import { Config } from "@mpt/preact-i18n/tooling";
 import { VscProject } from "./vsc-project";
 import { Output } from "./output";
 import { VscSourceFile } from "./vsc-source-file";
+import { getPreactI18nAPI, PreactI18nAPI, preactI18nModuleName, preactI18nModuleVersionRange } from "./preact-i18n-api";
 
 const CONFIG_PATTERN = "**/i18n.json5";
 
@@ -63,13 +63,21 @@ export class VscProjectManager extends vscode.Disposable {
 		const configFilename = uri.fsPath;
 		this._unloadProject(configFilename);
 		try {
+			let api: PreactI18nAPI;
+			try {
+				api = await getPreactI18nAPI(configFilename);
+			} catch (error) {
+				this._output.warn(`${preactI18nModuleName} ${preactI18nModuleVersionRange} must be installed locally in project: ${configFilename}.`, error);
+				return;
+			}
+
 			const context = dirname(configFilename);
 			const content = await vscode.workspace.fs.readFile(uri);
-			const config = Config.parse(new TextDecoder().decode(content), context);
+			const config = api.Config.parse(new TextDecoder().decode(content), context);
 
-			const project = new VscProject(this._output, uri, config);
+			const project = new VscProject(this._output, uri, config, api);
 			project.onDidUpdateSource(source => {
-				this._allSources.set(source.filename, source);
+				this._allSources.set(source.sourceFile.filename, source);
 			});
 			project.onDidRemoveSource(filename => {
 				this._allSources.delete(filename);

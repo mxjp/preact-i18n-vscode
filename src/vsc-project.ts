@@ -1,20 +1,22 @@
 import * as vscode from "vscode";
-import { Config, Project, SourceFile } from "@mpt/preact-i18n/tooling";
+import type { Config, Project } from "@mpt/preact-i18n/tooling";
 import { VscSourceFile } from "./vsc-source-file";
 import { Output } from "./output";
 import { basename } from "path";
+import { PreactI18nAPI } from "./preact-i18n-api";
 
 export class VscProject extends vscode.Disposable {
 	public constructor(
 		private readonly _output: Output,
 		public readonly configUri: vscode.Uri,
-		public readonly config: Config
+		public readonly config: Config,
+		public readonly api: PreactI18nAPI
 	) {
 		super(() => {
 			this._disposed = true;
 			this._watchers.forEach(watcher => watcher.dispose());
 		});
-		this._project = new Project(config);
+		this._project = new api.Project(config);
 		this._start().catch(error => _output.error(error));
 
 		this.configFilename = configUri.fsPath;
@@ -50,7 +52,7 @@ export class VscProject extends vscode.Disposable {
 	}
 
 	public get sources() {
-		return this._project.sources as ReadonlyMap<string, VscSourceFile>;
+		return this._project.sources;
 	}
 
 	public getDiagnostics() {
@@ -66,7 +68,7 @@ export class VscProject extends vscode.Disposable {
 		if (translationSet) {
 			this._dirty = true;
 			translationSet.translations[language] = {
-				lastModified: Project.Data.now(),
+				lastModified: this.api.Project.Data.now(),
 				value
 			};
 			this._onDidEdit.fire();
@@ -82,7 +84,7 @@ export class VscProject extends vscode.Disposable {
 			this._output.message(`Applied changes to: ${this.config.projectData}`);
 			await vscode.workspace.fs.writeFile(
 				vscode.Uri.file(this._project.config.projectData),
-				new TextEncoder().encode(Project.Data.stringify(this._project.data))
+				new TextEncoder().encode(this.api.Project.Data.stringify(this._project.data))
 			);
 			this._dirty = false;
 		}
@@ -95,7 +97,7 @@ export class VscProject extends vscode.Disposable {
 				// TODO: Write a backup of current project data to disk before loading new data.
 			}
 			const content = await vscode.workspace.fs.readFile(vscode.Uri.file(this.config.projectData));
-			this._project.data = Project.Data.parse(new TextDecoder().decode(content));
+			this._project.data = this.api.Project.Data.parse(new TextDecoder().decode(content));
 			this._output.message(`Updated data: ${this.config.projectData}`);
 			this._onDidUpdateProjectData.fire();
 		} catch (error) {
@@ -109,8 +111,8 @@ export class VscProject extends vscode.Disposable {
 		try {
 			const content = await vscode.workspace.fs.readFile(uri);
 			const sourceText = new TextDecoder().decode(content);
-			const source = new VscSourceFile(this, uri, sourceText);
-			this._project.updateSource(source);
+			const source = new VscSourceFile(this.api, this, uri, sourceText);
+			this._project.updateSource(source.sourceFile);
 			this._output.message(`Updated source: ${uri.fsPath}`);
 			this._onDidUpdateSource.fire(source);
 		} catch (error) {
@@ -138,7 +140,7 @@ export class VscProject extends vscode.Disposable {
 		for (const pattern of this.config.sources) {
 			const sources = await vscode.workspace.findFiles({ base: this.config.context, pattern });
 			for (const uri of sources) {
-				if (SourceFile.isSourceFile(uri.fsPath)) {
+				if (this.api.SourceFile.isSourceFile(uri.fsPath)) {
 					await this._updateSource(uri);
 				}
 			}
@@ -163,19 +165,19 @@ export class VscProject extends vscode.Disposable {
 					pattern
 				});
 				sourceWatcher.onDidCreate(async uri => {
-					if (SourceFile.isSourceFile(uri.fsPath)) {
+					if (this.api.SourceFile.isSourceFile(uri.fsPath)) {
 						await this._updateSource(uri);
 						this._updated();
 					}
 				});
 				sourceWatcher.onDidChange(async uri => {
-					if (SourceFile.isSourceFile(uri.fsPath)) {
+					if (this.api.SourceFile.isSourceFile(uri.fsPath)) {
 						await this._updateSource(uri);
 						this._updated();
 					}
 				});
 				sourceWatcher.onDidDelete(uri => {
-					if (SourceFile.isSourceFile(uri.fsPath)) {
+					if (this.api.SourceFile.isSourceFile(uri.fsPath)) {
 						this._removeSource(uri);
 						this._updated();
 					}
