@@ -60,7 +60,7 @@ export class VscProject extends vscode.Disposable {
 	}
 
 	public getSourceForId(id: string) {
-		return this._project.getSourceForId(id) as VscSourceFile | undefined;
+		return VscSourceFile.from(this._project.getSourceForId(id));
 	}
 
 	public setTranslation(id: string, language: string, value: Project.Value) {
