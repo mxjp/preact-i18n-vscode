@@ -88,7 +88,7 @@ export class VscProjectManager extends vscode.Disposable {
 
 			this._projects.set(configFilename, project);
 
-			this._output.message(`Loaded project: ${configFilename}`);
+			this._output.message(`Loaded project: ${configFilename}: ${JSON.stringify(config, null, "  ")}`);
 			this._onDidLoadProject.fire(project);
 		} catch (error) {
 			this._output.error(error);

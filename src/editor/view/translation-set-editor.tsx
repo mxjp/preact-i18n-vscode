@@ -107,7 +107,7 @@ function ValueEditor(props: { language: string, source: Translation, translation
 			return <div class="editor-translation-value">
 				<input
 					type="text"
-					value={props.translation.valueType === ValueType.Simple
+					value={props.translation?.valueType === ValueType.Simple
 						? props.translation.value
 						: ""}
 					onInput={e => {
@@ -123,7 +123,7 @@ function ValueEditor(props: { language: string, source: Translation, translation
 				parts.push("Unsupported language plural.");
 			} else {
 				const forms = props.source.rule.forms;
-				const value = (props.translation.valueType === ValueType.Plural && props.translation.value.length === forms.length)
+				const value = (props.translation?.valueType === ValueType.Plural && props.translation.value.length === forms.length)
 					? Array.from(props.translation.value)
 					: new Array(forms.length).fill("");
 
